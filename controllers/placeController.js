@@ -2,7 +2,7 @@ const Place = require("../models/place");
 const { nanoid } = require("nanoid");
 
 const addPlace = async (place) => {
-  let slug = place.name.replace(" ", "-") + "-" + nanoid(6);
+  let slug = place.name.replace(/\s/g, "-") + "-" + nanoid(6);
   let newPlace = new Place({ ...place, slug });
   try {
     newPlace.save();
@@ -13,7 +13,7 @@ const addPlace = async (place) => {
 };
 
 const findPlace = async (slug) => {
-  let place = Place.findOne({ slug });
+  let place = await Place.findOne({ slug });
   if (place) {
     return { status: true, result: place };
   } else {
@@ -25,11 +25,11 @@ const placesList = async (query) => {
   try {
     let places;
     if (query.name) {
-      places = Places.find({ name: query.name });
+        places = await Place.find({ name: { "$regex": query.name, "$options": "i" } });
     } else if (query.city) {
-      places = Places.find({ city: query.city });
+      places = await Place.find({ city: { "$regex": query.city, "$options": "i" } });
     } else {
-      places = Places.find();
+      places = await Place.find();
     }
     return { status: true, result: places };
   } catch (e) {
